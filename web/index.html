@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KKD Canlı İzleme</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #ffffff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #f1f1f1;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .video-container {
+            flex: 2;
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+        }
+        .video-container img {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 4px;
+        }
+        .sidebar {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .stats-box {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #333;
+        }
+        .stats-title {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-weight: bold;
+        }
+        .stat-value.green {
+            color: #4CAF50;
+        }
+        .stat-value.red {
+            color: #F44336;
+        }
+        .alerts-box {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 8px;
+            border: 2px solid #333;
+            flex-grow: 1;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+        .alert-item {
+            background-color: rgba(244, 67, 54, 0.1);
+            border-left: 4px solid #F44336;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+        .alert-time {
+            font-size: 0.8em;
+            color: #aaaaaa;
+            margin-bottom: 5px;
+        }
+        .alert-message {
+            font-size: 1em;
+            color: #ffcccc;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>🏭 Fabrika Güvenlik & KKD İzleme Paneli</h1>
+
+    <div class="container">
+        
+        <div class="video-container">
+            <img src="/video_feed" alt="Canlı Kamera Görüntüsü">
+        </div>
+
+        <div class="sidebar">
+            <div class="stats-box">
+                <div class="stats-title">Durum Özeti</div>
+                <div class="stat-item">
+                    <span>Uyumlu Kişi Sayısı:</span>
+                    <span class="stat-value green" id="compliant-count">0</span>
+                </div>
+                <div class="stat-item">
+                    <span>İhlal Sayısı:</span>
+                    <span class="stat-value red" id="violation-count">0</span>
+                </div>
+            </div>
+
+            <div class="alerts-box">
+                <div class="stats-title">Son Uyarılar</div>
+                <div id="alerts-list">
+                    <!-- Alerts will be populated here -->
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function fetchAlerts() {
+            fetch('/alerts')
+                .then(response => response.json())
+                .then(data => {
+                    // Update stats
+                    if(data.stats) {
+                        document.getElementById('compliant-count').innerText = data.stats.compliant || 0;
+                        document.getElementById('violation-count').innerText = data.stats.violations || 0;
+                    }
+
+                    // Update alerts
+                    const alertsList = document.getElementById('alerts-list');
+                    alertsList.innerHTML = '';
+                    if(data.alerts && data.alerts.length > 0) {
+                        data.alerts.forEach(alert => {
+                            const alertDiv = document.createElement('div');
+                            alertDiv.className = 'alert-item';
+                            alertDiv.innerHTML = `
+                                <div class="alert-time">${alert.time} | ${alert.camera}</div>
+                                <div class="alert-message">⚠️ İhlal: ${alert.message}</div>
+                            `;
+                            alertsList.appendChild(alertDiv);
+                        });
+                    } else {
+                        alertsList.innerHTML = '<div style="color:#888;">Henüz uyarı kaydı yok.</div>';
+                    }
+                })
+                .catch(error => console.error('Error fetching alerts:', error));
+        }
+
+        // Fetch alerts immediately, then every 2 seconds
+        fetchAlerts();
+        setInterval(fetchAlerts, 2000);
+    </script>
+</body>
+</html>
