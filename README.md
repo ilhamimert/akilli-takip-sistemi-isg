@@ -1,38 +1,89 @@
-# PPE Safety Kit Object Detection using YOLO
+# Akıllı Takip Sistemi — İSG
 
+YOLOv8 tabanlı Kişisel Koruyucu Donanım (KKD) tespit sistemi. Kamera görüntüsü veya video üzerinden çalışanların baret, yelek ve maske takıp takmadığını gerçek zamanlı olarak tespit eder ve ihlalleri loglar.
 
-## Overview
-This project aims to detect PPE safety kits (Personal Protective Equipment) using YOLO (You Only Look Once) object detection algorithm. The model can detect various types of  equipment including 'Hardhat', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest', 'Person', 'Safety Cone','Safety Vest', 'machinery', 'vehicle' .The target audience for this project includes individuals or organizations who want to ensure the safety of their employees or people working in hazardous environments.
+## Özellikler
 
+- **Gerçek Zamanlı Tespit** — Webcam veya RTSP kamera akışından anlık KKD kontrolü
+- **Video Analizi** — Yüklenen video dosyaları üzerinde tespit
+- **İhlal Loglama** — Her ihlal `logs/violations.txt` ve `logs/alerts.json` dosyasına kaydedilir
+- **Web Arayüzü** — Flask ile tarayıcı üzerinden kullanım
+- **Renk Kodlama** — Yeşil: uyumlu, Kırmızı: ihlal, Beyaz: kişi
+- **İstatistik Takibi** — Anlık uyumlu/ihlal sayısı `logs/stats.json` dosyasına yazılır
 
-## Dataset
-We used the PPE detection dataset available on Roboflow for training our model. The dataset contains images of people wearing PPE equipment in different environments.Dataset is annotated and have classes = `['Hardhat', 'Mask', 'NO-Hardhat', 'NO-Mask', 'NO-Safety Vest', 'Person', 'Safety Cone','Safety Vest', 'machinery','vehicle']` . Training set contains 2.6k images , validation set contains 114 images and Testing set contains 82 images. Input dimensions of single image is 640x640. 
+## Tespit Edilen Sınıflar
 
-## Tech-Stack  : 
+| Sınıf | Açıklama |
+|-------|----------|
+| Hardhat / NO-Hardhat | Baret var / yok |
+| Safety Vest / NO-Safety Vest | Güvenlik yeleği var / yok |
+| Mask / NO-Mask | Maske var / yok |
+| Person | Kişi |
+| Safety Cone | Güvenlik konisi |
+| machinery | Makine |
+| vehicle | Araç |
 
-- OpenCV 
-- Ultralytics 
-- torch 
-- tochvision 
-- Python 3.10
-- flask
+## Kurulum
 
+```bash
+git clone https://github.com/ilhamimert/akilli-takip-sistemi-isg.git
+cd akilli-takip-sistemi-isg
+pip install -r requirements.txt
+```
 
-## Installation : 
+## Kullanım
 
-- clone the repository : `$ git clone https://github.com/Vinayakmane47/PPE_detection_YOLO.git`
-- create a conda environment : `$ conda create -n myyolo python=3.10 -y`
-- Intall requirements : `$ pip install -r requirements.txt`
-- Run main.py : `python app.py`
-- Upload Image/Video to detect object or Start Live videocam 
+### Web Arayüzü
 
+```bash
+python app.py
+```
 
-## Results : 
+Tarayıcıda `http://localhost:5000` adresini aç.
 
-![1](https://user-images.githubusercontent.com/103372852/233774695-ad3b800b-5d8e-4583-a395-e70ac86f2dda.PNG)
+- **Ana Sayfa** — Video dosyası yükle ve analiz et
+- **Webcam** — Canlı kamera akışını izle
 
-![3](https://user-images.githubusercontent.com/103372852/233774758-180186a2-8267-495b-8c04-0d43778299d2.PNG)
+### Komut Satırı (Webcam)
 
+```bash
+python detect.py --source 0
+```
 
+### Komut Satırı (Video veya RTSP)
 
+```bash
+python detect.py --source video.mp4
+python detect.py --source rtsp://kamera-ip/stream
+```
 
+### Parametreler
+
+| Parametre | Varsayılan | Açıklama |
+|-----------|-----------|----------|
+| `--source` | `0` | Kaynak: 0=webcam, video yolu, RTSP URL |
+| `--conf` | `0.5` | Güven eşiği (0.0 - 1.0) |
+| `--imgsz` | `640` | Görüntü boyutu |
+
+## Loglar
+
+```
+logs/
+├── violations.txt   ← Metin formatında ihlal kayıtları
+├── alerts.json      ← Son 10 ihlal (web arayüzü için)
+└── stats.json       ← Anlık uyumlu/ihlal sayısı
+```
+
+## Teknik Stack
+
+| Bileşen | Teknoloji |
+|---------|-----------|
+| Nesne Tespiti | YOLOv8 (Ultralytics) |
+| Görüntü İşleme | OpenCV |
+| Web Arayüzü | Flask |
+| Model | `models/best.pt` (özel eğitilmiş) |
+
+## Gereksinimler
+
+- Python 3.10+
+- Webcam veya IP kamera (canlı tespit için)
